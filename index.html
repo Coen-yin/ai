@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoenAI - Complete Chatbot AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 16px;
+            background-size: 400% 400%;
+            animation: gradientFlow 20s ease infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .chatbot-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .chatbot-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .model-bar {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .model-select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .model-select:focus {
+            border-color: #667eea;
+        }
+        
+        .chat-stats {
+            font-size: 13px;
+            color: #64748b;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: #fafbfc;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            animation: messageSlide 0.4s ease;
+        }
+        
+        @keyframes messageSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+        }
+        
+        .user-message .message-bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .ai-message .message-bubble {
+            background: white;
+            color: #1a202c;
+            margin-right: auto;
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .message-header {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 20px;
+            border-bottom-left-radius: 6px;
+            max-width: 80%;
+            margin-right: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typingBounce 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingBounce {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
+        }
+        
+        .input-area {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 24px;
+        }
+        
+        .quick-prompts {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-prompt {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .quick-prompt:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 24px;
+            resize: none;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
+            min-height: 50px;
+            max-height: 120px;
+            background: #fafbfc;
+        }
+        
+        .message-input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .send-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .send-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .send-button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 24px;
+            border: 1px solid #fecaca;
+            display: none;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+        
+        .welcome-message .ai-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .chatbot-container {
+                height: 100vh;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            body {
+                padding: 0;
+            }
+            
+            .message-bubble {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Load Puter AI SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+    
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>AI Online</span>
+            </div>
+            <h1>
+                <span>🤖</span>
+                <span>CoenAI</span>
+            </h1>
+            <p>Complete AI Chatbot powered by Puter AI</p>
+            <p style="font-size: 13px; opacity: 0.9; margin-top: 4px;">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-08-09 12:44:33</p>
+            <p style="font-size: 12px; opacity: 0.8;">Current User's Login: Coen-yin</p>
+        </div>
+        
+        <div class="chat-area">
+            <div class="model-bar">
+                <div class="model-selector">
+                    <label style="font-weight: 600; font-size: 14px; color: #475569;">Model:</label>
+                    <select id="modelSelect" class="model-select">
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="claude-3">Claude-3</option>
+                        <option value="gemini-pro">Gemini Pro</option>
+                    </select>
+                </div>
+                <div class="chat-stats">
+                    Messages: <span id="messageCount">0</span> | 
+                    Model: <span id="currentModelDisplay">GPT-4</span>
+                </div>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <div class="ai-icon">🤖</div>
+                    <h3 style="margin-bottom: 8px;">Hello Coen-yin!</h3>
+                    <p>I'm your complete AI chatbot assistant. Ask me anything!</p>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <span>CoenAI is thinking...</span>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <div class="quick-prompts">
+                <div class="quick-prompt" onclick="useQuickPrompt('What can you help me with?')">🤔 What can you do?</div>
+                <div class="quick-prompt" onclick="useQuickPrompt('Tell me a joke')">😄 Tell me a joke</div>
+                <div class="quick-prompt" onclick="useQuickPrompt('Explain quantum physics')">🔬 Quantum physics</div>
+                <div class="quick-prompt" onclick="useQuickPrompt('Write a short poem')">📝 Write a poem</div>
+                <div class="quick-prompt" onclick="useQuickPrompt('Help me code')">💻 Help with code</div>
+            </div>
+            
+            <div class="input-container">
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Type your message here... Press Enter to send, Shift+Enter for new line"
+                    rows="1"
+                ></textarea>
+                <button id="sendButton" class="send-button" title="Send message">
+                    <span>➤</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CoenAIChatbot {
+            constructor() {
+                this.messageCount = 0;
+                this.isTyping = false;
+                this.currentModel = 'gpt-4';
+                
+                // Get DOM elements
+                this.messagesContainer = document.getElementById('messagesContainer');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.modelSelect = document.getElementById('modelSelect');
+                this.errorMessage = document.getElementById('errorMessage');
+                this.messageCountDisplay = document.getElementById('messageCount');
+                this.currentModelDisplay = document.getElementById('currentModelDisplay');
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🤖 CoenAI Chatbot initializing...');
+                console.log('📅 Current Date and Time: 2025-08-09 12:44:33');
+                console.log('👤 Current User: Coen-yin');
+                
+                this.bindEvents();
+                this.testPuterConnection();
+                this.addWelcomeMessage();
+            }
+            
+            bindEvents() {
+                // Send button click
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                
+                // Enter key to send (Shift+Enter for new line)
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                // Auto-resize textarea
+                this.messageInput.addEventListener('input', () => {
+                    this.messageInput.style.height = 'auto';
+                    this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+                });
+                
+                // Model selection change
+                this.modelSelect.addEventListener('change', (e) => {
+                    this.currentModel = e.target.value;
+                    this.currentModelDisplay.textContent = e.target.value;
+                    console.log(`🔄 Model changed to: ${this.currentModel}`);
+                });
+            }
+            
+            async testPuterConnection() {
+                try {
+                    if (typeof puter === 'undefined') {
+                        throw new Error('Puter SDK not loaded');
+                    }
+                    
+                    console.log('🌐 Testing Puter AI connection...');
+                    // Small test to verify connection
+                    await puter.ai.chat('Hi', { model: this.currentModel });
+                    console.log('✅ Puter AI connection successful!');
+                    
+                } catch (error) {
+                    console.error('❌ Puter AI connection failed:', error);
+                    this.showError(`Connection failed: ${error.message}`);
+                }
+            }
+            
+            addWelcomeMessage() {
+                const welcomeMsg = `Welcome to CoenAI! 🎉
+
+I'm your complete AI chatbot assistant powered by Puter AI. Here's what I can do:
+
+🤔 **Answer Questions** - Ask me about anything
+💻 **Help with Code** - Debug, explain, or write code
+📝 **Creative Writing** - Stories, poems, scripts
+🔬 **Explain Concepts** - Science, math, technology
+🗣️ **Have Conversations** - Chat about any topic
+🎯 **Problem Solving** - Help you think through challenges
+
+Try the quick prompts below or just start typing! No API keys needed - everything works right in your browser.
+
+What would you like to talk about?`;
+
+                this.addMessage(welcomeMsg, false, true);
+            }
+            
+            useQuickPrompt(prompt) {
+                this.messageInput.value = prompt;
+                this.messageInput.focus();
+            }
+            
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                
+                if (!message || this.isTyping) {
+                    return;
+                }
+                
+                console.log(`💬 Sending: "${message}"`);
+                
+                // Add user message
+                this.addMessage(message, true);
+                
+                // Clear input
+                this.messageInput.value = '';
+                this.messageInput.style.height = 'auto';
+                
+                // Show typing indicator
+                this.showTyping(true);
+                
+                try {
+                    console.log(`🤖 Calling Puter AI with model: ${this.currentModel}`);
+                    
+                    // Call Puter AI
+                    const response = await puter.ai.chat(message, { 
+                        model: this.currentModel 
+                    });
+                    
+                    this.showTyping(false);
+                    
+                    if (response && response.trim()) {
+                        console.log('✅ Response received:', response.substring(0, 100) + '...');
+                        this.addMessage(response.trim(), false);
+                    } else {
+                        throw new Error('Empty response from AI');
+                    }
+                    
+                } catch (error) {
+                    this.showTyping(false);
+                    console.error('❌ Error:', error);
+                    
+                    let errorMsg = 'Sorry, I encountered an error: ';
+                    
+                    if (error.message.includes('rate limit')) {
+                        errorMsg += 'Rate limit reached. Please wait a moment and try again.';
+                    } else if (error.message.includes('network')) {
+                        errorMsg += 'Network connection issue. Please check your internet.';
+                    } else {
+                        errorMsg += error.message || 'Unknown error occurred.';
+                    }
+                    
+                    this.addMessage(errorMsg, false);
+                    this.showError(errorMsg);
+                }
+            }
+            
+            addMessage(content, isUser, isWelcome = false) {
+                // Remove welcome message if it exists
+                const welcomeMsg = this.messagesContainer.querySelector('.welcome-message');
+                if (welcomeMsg && !isWelcome) {
+                    welcomeMsg.remove();
+                }
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+                
+                const currentTime = new Date().toLocaleTimeString();
+                
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="message-header">
+                            ${isUser ? '👤 Coen-yin' : '🤖 CoenAI'}
+                        </div>
+                        <div class="message-content">${this.formatMessage(content)}</div>
+                        <div class="message-time">${currentTime}</div>
+                    </div>
+                `;
+                
+                this.messagesContainer.appendChild(messageDiv);
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                
+                if (!isWelcome) {
+                    this.messageCount++;
+                    this.messageCountDisplay.textContent = this.messageCount;
+                }
+            }
+            
+            formatMessage(content) {
+                // Basic formatting for better readability
+                return content
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code style="background: #f1f5f9; padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+            }
+            
+            showTyping(show) {
+                this.isTyping = show;
+                this.sendButton.disabled = show;
+                
+                if (show) {
+                    this.typingIndicator.style.display = 'flex';
+                    this.messagesContainer.appendChild(this.typingIndicator);
+                    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                } else {
+                    this.typingIndicator.style.display = 'none';
+                }
+            }
+            
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    this.errorMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Global function for quick prompts
+        function useQuickPrompt(prompt) {
+            if (window.chatbot) {
+                window.chatbot.useQuickPrompt(prompt);
+            }
+        }
+        
+        // Initialize chatbot when page loads
+        window.addEventListener('load', () => {
+            window.chatbot = new CoenAIChatbot();
+        });
+        
+        // Handle connection status
+        window.addEventListener('online', () => {
+            console.log('🌐 Connection restored');
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('🔌 Connection lost');
+            if (window.chatbot) {
+                window.chatbot.showError('No internet connection. Please check your network.');
+            }
+        });
+        
+        console.log('🚀 CoenAI Complete Chatbot Loading...');
+    </script>
+</body>
+</html>
