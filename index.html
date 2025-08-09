@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoenAI - Puter AI Powered</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            min-height: 100vh;
+            padding: 20px;
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 28px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            height: 90vh;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .puter-badge {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 800;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            padding: 32px;
+            overflow: hidden;
+        }
+        
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            height: 100%;
+        }
+        
+        .model-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .model-select {
+            padding: 10px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            background: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .model-select:focus {
+            border-color: #6366f1;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(248, 250, 252, 0.8);
+            padding: 28px;
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 18px 24px;
+            border-radius: 24px;
+            animation: messageAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        @keyframes messageAppear {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 8px;
+            font-weight: 500;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+        
+        .ai-message {
+            background: white;
+            color: #1f2937;
+            align-self: flex-start;
+            border-bottom-left-radius: 8px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            white-space: pre-line;
+        }
+        
+        .message-header {
+            font-weight: 800;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-message .message-header { color: rgba(255,255,255,0.9); }
+        .ai-message .message-header { color: #6366f1; }
+        
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 18px 24px;
+            border: 3px solid #e5e7eb;
+            border-radius: 28px;
+            outline: none;
+            font-size: 16px;
+            resize: none;
+            min-height: 56px;
+            max-height: 140px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(248, 250, 252, 0.8);
+            font-family: inherit;
+        }
+        
+        .chat-input:focus {
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .send-button {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 20px;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+        
+        .send-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 12px 35px rgba(99, 102, 241, 0.4);
+        }
+        
+        .send-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 18px 24px;
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 24px;
+            border-bottom-left-radius: 8px;
+            align-self: flex-start;
+            color: #6b7280;
+            font-style: italic;
+            animation: typingPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes typingPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .example-prompts {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .example-prompt {
+            padding: 8px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .example-prompt:hover {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .info-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            font-size: 13px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            min-width: 280px;
+        }
+        
+        .info-panel strong {
+            color: #6366f1;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: none;
+            margin-bottom: 16px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Load Puter AI SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+    
+    <div class="container">
+        <div class="header">
+            <div class="puter-badge">
+                🌐 <span>Puter AI</span>
+            </div>
+            <h1>
+                <span>🤖</span>
+                <span>CoenAI</span>
+            </h1>
+            <p>Powered by Puter AI - No API Keys Required!</p>
+            <p style="font-size: 14px; opacity: 0.9; margin-top: 4px;">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-08-09 12:37:05</p>
+            <p style="font-size: 13px; opacity: 0.8;">Current User's Login: Coen-yin</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="model-controls">
+                    <div class="model-selector">
+                        <label style="font-weight: 600; color: #374151;">AI Model:</label>
+                        <select id="modelSelect" class="model-select">
+                            <option value="gpt-5">GPT-5 (Latest)</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="claude-3">Claude-3</option>
+                            <option value="gemini-pro">Gemini Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>Puter AI Connected</span>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai-message">
+                        <div class="message-header">
+                            <span>🤖</span>
+                            <span>CoenAI</span>
+                        </div>
+                        Hello Coen-yin! I'm CoenAI powered by Puter AI! 🚀
+                        
+                        🌟 **Amazing Features:**
+                        • 🆓 Completely FREE - no API keys needed!
+                        • 🤖 Multiple AI models (GPT-5, GPT-4, Claude-3, Gemini)
+                        • ⚡ Fast responses powered by Puter's infrastructure
+                        • 🔒 Secure and private conversations
+                        • 🌐 Works directly in your browser
+                        • 📱 Pure HTML - no Python backend required!
+                        
+                        I'm using Puter's AI service with your exact implementation:
+                        `puter.ai.chat("message", { model: "gpt-5" })`
+                        
+                        Try the example prompts below or ask me anything! ✨
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="message-header">
+                        <span>🤖</span>
+                        <span>CoenAI</span>
+                    </div>
+                    <span class="loading-spinner"></span>Processing with Puter AI...
+                </div>
+                
+                <div class="input-section">
+                    <div class="error-message" id="errorMessage"></div>
+                    
+                    <div class="example-prompts">
+                        <div class="example-prompt" onclick="setPrompt('What are the benefits of exercise?')">💪 Benefits of exercise</div>
+                        <div class="example-prompt" onclick="setPrompt('Explain quantum computing simply')">🔬 Quantum computing</div>
+                        <div class="example-prompt" onclick="setPrompt('Write a short story about space')">🚀 Space story</div>
+                        <div class="example-prompt" onclick="setPrompt('Help me debug this Python code')">🐍 Debug code</div>
+                        <div class="example-prompt" onclick="setPrompt('What is the future of AI?')">🤖 AI future</div>
+                        <div class="example-prompt" onclick="setPrompt('Create a simple recipe')">🍳 Recipe ideas</div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <textarea 
+                            id="chatInput" 
+                            class="chat-input" 
+                            placeholder="Ask me anything - powered by Puter AI with no API limits!"
+                            rows="1"
+                        ></textarea>
+                        <button id="sendButton" class="send-button">
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <strong>🤖 Puter AI Status</strong>
+        User: Coen-yin<br>
+        Messages: <span id="msgCount">0</span><br>
+        Model: <span id="currentModel">GPT-5</span><br>
+        API Keys: ❌ Not Required<br>
+        Backend: ❌ Pure HTML<br>
+        Status: <span style="color: #10b981;">● Free & Ready</span>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const modelSelect = document.getElementById('modelSelect');
+        const errorMessage = document.getElementById('errorMessage');
+        const msgCount = document.getElementById('msgCount');
+        const currentModel = document.getElementById('currentModel');
+        
+        let messageCount = 0;
+        let conversationHistory = [];
+
+        console.log('🚀 CoenAI Pure HTML with Puter AI initializing...');
+        console.log('📅 Current Date and Time: 2025-08-09 12:37:05');
+        console.log('👤 Current User: Coen-yin');
+        console.log('🌐 Using: Pure HTML + Puter AI SDK');
+
+        function showError(message) {
+            console.error('❌ Error:', message);
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 7000);
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    ${isUser ? 
+                        '<span>👤</span><span>Coen-yin</span>' : 
+                        '<span>🤖</span><span>CoenAI</span>'
+                    }
+                </div>
+                ${content}
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            messageCount++;
+            msgCount.textContent = messageCount;
+
+            // Save to local history
+            conversationHistory.push({
+                content: content,
+                isUser: isUser,
+                timestamp: new Date().toISOString(),
+                model: isUser ? null : modelSelect.value
+            });
+
+            // Keep history manageable
+            if (conversationHistory.length > 50) {
+                conversationHistory = conversationHistory.slice(-50);
+            }
+        }
+
+        function showTyping(show = true) {
+            typingIndicator.style.display = show ? 'block' : 'none';
+            if (show) {
+                chatMessages.scrollTop = chatMessages.scrollHeight + 100;
+            }
+        }
+
+        function setPrompt(prompt) {
+            chatInput.value = prompt;
+            chatInput.focus();
+            // Optional: Auto-send the prompt
+            // setTimeout(() => sendMessage(), 300);
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            const model = modelSelect.value;
+            
+            if (!message) {
+                showError('Please enter a message');
+                chatInput.focus();
+                return;
+            }
+
+            console.log(`💬 Sending message: "${message}" with model: ${model}`);
+
+            addMessage(message, true);
+            chatInput.value = '';
+            sendButton.disabled = true;
+            showTyping(true);
+            currentModel.textContent = model;
+
+            try {
+                console.log(`🤖 Calling Puter AI: puter.ai.chat("${message}", { model: "${model}" })`);
+                
+                // Use Puter AI exactly as in your example
+                const response = await puter.ai.chat(message, { model: model });
+                
+                showTyping(false);
+                
+                console.log('✅ Puter AI Response received:', response?.substring(0, 100) + '...');
+                
+                // Display the response
+                if (response && response.trim()) {
+                    addMessage(response.trim());
+                    console.log(`📊 Total messages: ${messageCount}`);
+                } else {
+                    throw new Error('Empty response from Puter AI');
+                }
+                
+            } catch (error) {
+                showTyping(false);
+                console.error('❌ Puter AI Error:', error);
+                
+                let errorMsg = '⚠️ Puter AI Error: ';
+                
+                if (error.message) {
+                    errorMsg += error.message;
+                } else if (error.toString().includes('network')) {
+                    errorMsg += 'Network connection issue. Please check your internet.';
+                } else if (error.toString().includes('rate')) {
+                    errorMsg += 'Rate limit reached. Please wait a moment and try again.';
+                } else {
+                    errorMsg += 'Unknown error occurred. Please try again.';
+                }
+                
+                showError(errorMsg);
+                addMessage(`I encountered an error: ${errorMsg}\n\nPlease try again or refresh the page.`);
+            }
+
+            sendButton.disabled = false;
+            chatInput.focus();
+        }
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+        });
+
+        // Event listeners
+        sendButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Model change listener
+        modelSelect.addEventListener('change', (e) => {
+            currentModel.textContent = e.target.value;
+            console.log(`🔄 Model changed to: ${e.target.value}`);
+        });
+
+        // Test Puter AI connection and setup
+        window.addEventListener('load', async function() {
+            console.log('🌐 Testing Puter AI connection...');
+            
+            try {
+                // Simple connectivity test
+                if (typeof puter !== 'undefined' && puter.ai) {
+                    console.log('✅ Puter AI SDK loaded successfully!');
+                    
+                    // Optional: Run a quick test
+                    try {
+                        const testResponse = await puter.ai.chat("Hi", { model: "gpt-5" });
+                        if (testResponse) {
+                            console.log('✅ Puter AI connection test successful!');
+                            console.log('🎯 Ready for conversations!');
+                        }
+                    } catch (testError) {
+                        console.warn('⚠️ Puter AI test failed (but SDK is loaded):', testError.message);
+                    }
+                    
+                } else {
+                    throw new Error('Puter SDK not loaded');
+                }
+                
+            } catch (error) {
+                console.error('❌ Puter AI setup failed:', error);
+                showError(`Puter AI setup failed: ${error.message}. Please refresh the page.`);
+            }
+        });
+
+        // Save conversation history to localStorage
+        window.addEventListener('beforeunload', function() {
+            try {
+                localStorage.setItem('coenai_conversation_history', JSON.stringify(conversationHistory));
+                console.log('💾 Conversation history saved');
+            } catch (e) {
+                console.warn('⚠️ Could not save conversation history:', e);
+            }
+        });
+
+        // Load conversation history from localStorage
+        try {
+            const savedHistory = localStorage.getItem('coenai_conversation_history');
+            if (savedHistory) {
+                conversationHistory = JSON.parse(savedHistory);
+                console.log(`📚 Loaded ${conversationHistory.length} previous conversations`);
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not load conversation history:', e);
+        }
+
+        // Initialize
+        chatInput.focus();
+        console.log('✅ CoenAI Pure HTML Interface Ready!');
+        console.log('🎯 No Python backend required - everything runs in the browser!');
+    </script>
+</body>
+</html>
